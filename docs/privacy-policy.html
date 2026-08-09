@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>CycleTrack Privacy Policy</title>
+  <style>
+    :root { --text: #301e2a; --muted: #826c78; --accent: #e45a85; --bg: #fff6f9; }
+    * { box-sizing: border-box; }
+    body {
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+      line-height: 1.6;
+      color: var(--text);
+      background: var(--bg);
+      margin: 0;
+      padding: 24px 16px 48px;
+    }
+    main { max-width: 720px; margin: 0 auto; background: #fff; padding: 32px 28px; border-radius: 16px; }
+    h1 { color: var(--accent); font-size: 1.75rem; margin-top: 0; }
+    h2 { font-size: 1.15rem; margin-top: 1.75rem; }
+    p, li { color: var(--text); }
+    .muted { color: var(--muted); font-size: 0.95rem; }
+    a { color: var(--accent); }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>CycleTrack Privacy Policy</h1>
+    <p class="muted">Last updated: August 9, 2026</p>
+
+    <p>
+      CycleTrack (&quot;we&quot;, &quot;our&quot;, or &quot;the app&quot;) is a privacy-first period and
+      ovulation tracking application. This policy explains what information the app
+      handles, how it is stored, and the choices you have.
+    </p>
+
+    <h2>Summary</h2>
+    <ul>
+      <li>No account is required to use the app.</li>
+      <li>Your cycle logs are stored locally in an encrypted database on your device.</li>
+      <li>Cloud backup is optional and uses end-to-end encryption before upload.</li>
+      <li>We do not sell your personal data.</li>
+    </ul>
+
+    <h2>Information you provide</h2>
+    <p>You may optionally log:</p>
+    <ul>
+      <li>Menstrual flow, symptoms, mood, intimacy, libido</li>
+      <li>Basal body temperature (BBT), weight, cervical mucus, pill intake, notes</li>
+      <li>App lock PIN (stored as a one-way hash on device only)</li>
+      <li>Pregnancy mode settings (if enabled)</li>
+    </ul>
+    <p>This data is used only to display your calendar, predictions, analytics, insights, and reminders within the app.</p>
+
+    <h2>Local storage</h2>
+    <p>
+      CycleTrack stores your data in an encrypted SQLite database (SQLCipher) on your
+      device. We do not transmit this data unless you explicitly enable cloud backup
+      and sign in.
+    </p>
+
+    <h2>Optional cloud backup</h2>
+    <p>
+      If you choose <strong>Backup &amp; restore</strong> and sign in with Google, the app
+      encrypts your data on your device using AES-256-GCM, then uploads an opaque
+      ciphertext blob to our Supabase backend. The server cannot read your plaintext
+      cycle data. Your Google account is used only to identify your backup row.
+    </p>
+    <p>You can delete your cloud backup at any time from Settings.</p>
+
+    <h2>Third-party services</h2>
+    <ul>
+      <li><strong>Google Sign-In</strong> — only if you enable cloud backup (authentication).</li>
+      <li><strong>Supabase</strong> — stores encrypted backup blobs when you use cloud backup.</li>
+      <li><strong>Google Fonts</strong> — typography may be loaded from Google servers.</li>
+    </ul>
+    <p>The app works fully offline without these services except font loading.</p>
+
+    <h2>Notifications</h2>
+    <p>
+      If you grant permission, the app schedules local notifications on your device
+      for period reminders, fertile window, ovulation, late period alerts, and pill
+      reminders. Notification content is generated locally; we do not send push
+      notifications from a server.
+    </p>
+
+    <h2>Data export and deletion</h2>
+    <ul>
+      <li><strong>Export CSV</strong> — download your logs from Settings.</li>
+      <li><strong>Delete everything</strong> — wipes local data, app lock, notifications, and cloud backup (when signed in).</li>
+      <li><strong>Uninstall</strong> — removes local app data from your device.</li>
+    </ul>
+
+    <h2>Children</h2>
+    <p>CycleTrack is not directed at children under 13. We do not knowingly collect data from children.</p>
+
+    <h2>Medical disclaimer</h2>
+    <p>
+      CycleTrack provides statistical estimates based on your logged history. It is not
+      medical advice, diagnosis, or contraception counseling. Consult a qualified
+      healthcare professional for medical decisions.
+    </p>
+
+    <h2>Security</h2>
+    <p>
+      We use industry-standard encryption for local storage and cloud backups.
+      No method of storage is 100% secure; use app lock and keep your device secure.
+    </p>
+
+    <h2>Changes to this policy</h2>
+    <p>
+      We may update this policy. The &quot;Last updated&quot; date at the top will reflect changes.
+      Continued use of the app after updates constitutes acceptance.
+    </p>
+
+    <h2>Contact</h2>
+    <p>
+      For privacy questions, contact the developer via the GitHub repository:
+      <a href="https://github.com/SoftwareEngineer-Hadi/CycleTrack">SoftwareEngineer-Hadi/CycleTrack</a>
+    </p>
+  </main>
+</body>
+</html>
