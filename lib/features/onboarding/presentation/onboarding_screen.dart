@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 
 import '../../../core/db/database.dart';
 import '../../../core/models.dart';
+import '../../../core/notifications/notification_service.dart';
 import '../../../core/providers.dart';
 import '../../../core/theme/app_theme.dart';
 
@@ -64,6 +65,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
       }
     }
     await db.setSetting(SettingsKeys.onboardingDone, 'true');
+    await NotificationService.instance.requestPermissions();
   }
 
   void _next() {

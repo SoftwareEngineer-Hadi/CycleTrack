@@ -42,7 +42,8 @@ class _BackupScreenState extends ConsumerState<BackupScreen> {
     final colors = context.cycleColors;
     final settings = ref.watch(settingsMapProvider);
     final last = settings[SettingsKeys.lastBackupAt];
-    final signedIn = _sync.currentUser != null;
+    final user = ref.watch(authUserProvider).valueOrNull;
+    final signedIn = user != null;
 
     return Scaffold(
       appBar: AppBar(title: const Text('Backup & restore')),
@@ -91,7 +92,7 @@ class _BackupScreenState extends ConsumerState<BackupScreen> {
                       : colors.textSecondary,
                 ),
                 title: Text(signedIn
-                    ? (_sync.currentUser?.email ?? 'Signed in')
+                    ? (user.email ?? 'Signed in')
                     : 'Not signed in'),
                 subtitle: Text(signedIn
                     ? 'Ready to backup and restore'

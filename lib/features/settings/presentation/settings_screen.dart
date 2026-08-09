@@ -219,26 +219,21 @@ class SettingsScreen extends ConsumerWidget {
           const SizedBox(height: 16),
           _SectionHeader('Appearance'),
           Card(
-            child: Column(
-              children: [
-                for (final mode in [
-                  ('system', 'System'),
-                  ('light', 'Light'),
-                  ('dark', 'Dark'),
-                ])
-                  RadioListTile<String>(
-                    title: Text(mode.$2),
-                    value: mode.$1,
-                    groupValue: themeMode,
-                    onChanged: (v) {
-                      if (v != null) {
-                        ref
-                            .read(databaseProvider)
-                            .setSetting(SettingsKeys.themeMode, v);
-                      }
-                    },
-                  ),
-              ],
+            child: Padding(
+              padding: const EdgeInsets.all(12),
+              child: SegmentedButton<String>(
+                segments: const [
+                  ButtonSegment(value: 'system', label: Text('System')),
+                  ButtonSegment(value: 'light', label: Text('Light')),
+                  ButtonSegment(value: 'dark', label: Text('Dark')),
+                ],
+                selected: {themeMode},
+                onSelectionChanged: (selection) {
+                  ref
+                      .read(databaseProvider)
+                      .setSetting(SettingsKeys.themeMode, selection.first);
+                },
+              ),
             ),
           ),
           const SizedBox(height: 16),

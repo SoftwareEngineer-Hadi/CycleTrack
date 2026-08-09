@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../features/cycle/domain/cycle_engine.dart';
 import 'db/database.dart';
 import 'models.dart';
+import 'sync/supabase_config.dart';
 
 final databaseProvider = Provider<AppDatabase>((ref) {
   final db = AppDatabase();
@@ -86,4 +88,17 @@ final onboardingDoneProvider = Provider<bool?>((ref) {
   final settings = ref.watch(settingsProvider);
   if (settings.isLoading) return null;
   return (settings.value ?? const {})[SettingsKeys.onboardingDone] == 'true';
+});
+
+/// Supabase signed-in user (null when offline, not configured, or signed out).
+final authUserProvider = StreamProvider<User?>((ref) async* {
+  if (!supabaseConfigured) {
+    yield null;
+    return;
+  }
+  final client = Supabase.instance.client;
+  yield client.auth.currentUser;
+  await for (final event in client.auth.onAuthStateChange) {
+    yield event.session?.user;
+  }
 });
