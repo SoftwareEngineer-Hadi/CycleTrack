@@ -48,12 +48,20 @@ sips -z 1920 1080 my-capture.png --out my-capture.png
 
 ## Release build
 
-Before upload, create a signed release APK/AAB (not debug):
+Signed release AAB (upload this to Play Console):
 
 ```bash
 flutter build appbundle --release
 ```
 
-Output: `build/app/outputs/bundle/release/app-release.aab`
+**Output:** `build/app/outputs/bundle/release/app-release.aab`
 
-Configure signing in `android/app/build.gradle.kts` with your upload keystore (not debug).
+### Signing (already configured)
+
+- Keystore: `android/app/upload-keystore.jks` (gitignored)
+- Credentials: `android/keystore-credentials.txt` (gitignored — **back this up**)
+- Config: `android/key.properties` (gitignored)
+
+**Never commit or lose the keystore.** Without it you cannot publish updates for `app.cycletrack.cycletrack` on Play Store.
+
+First-time Play Console upload: enable **Google Play App Signing** when prompted (recommended).
