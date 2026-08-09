@@ -17,32 +17,75 @@ class LockScreen extends ConsumerStatefulWidget {
 class _LockScreenState extends ConsumerState<LockScreen> {
   String _pin = '';
   String? _error;
-  bool _triedBiometric = false;
+  bool _biometricBusy = false;
+  bool _autoBiometricAttempted = false;
+  final _auth = LocalAuthentication();
 
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) => _tryBiometric());
+    WidgetsBinding.instance.addPostFrameCallback((_) => _tryBiometric(auto: true));
   }
 
-  Future<void> _tryBiometric() async {
-    if (_triedBiometric) return;
-    _triedBiometric = true;
-    final settings = ref.read(settingsMapProvider);
-    if (settings[SettingsKeys.biometricEnabled] != 'true') return;
+  bool get _biometricEnabled =>
+      ref.read(settingsMapProvider)[SettingsKeys.biometricEnabled] == 'true';
 
-    final auth = LocalAuthentication();
+  Future<void> _tryBiometric({bool auto = false}) async {
+    if (_biometricBusy) return;
+    if (!_biometricEnabled) return;
+    if (auto && _autoBiometricAttempted) return;
+    if (auto) _autoBiometricAttempted = true;
+
+    setState(() {
+      _biometricBusy = true;
+      if (!auto) _error = null;
+    });
+
     try {
-      final ok = await auth.authenticate(
+      final supported = await _auth.isDeviceSupported();
+      if (!supported) {
+        if (!auto && mounted) {
+          setState(() => _error = 'Biometrics not available on this device');
+        }
+        return;
+      }
+
+      final biometrics = await _auth.getAvailableBiometrics();
+      if (biometrics.isEmpty) {
+        if (!auto && mounted) {
+          setState(
+            () => _error = 'No fingerprint or face enrolled on this device',
+          );
+        }
+        return;
+      }
+
+      final ok = await _auth.authenticate(
         localizedReason: 'Unlock CycleTrack',
-        biometricOnly: false,
+        biometricOnly: true,
         persistAcrossBackgrounding: true,
       );
       if (ok && mounted) {
         ref.read(appLockProvider.notifier).state = false;
       }
-    } catch (_) {
-      // Fall through to PIN entry.
+    } on LocalAuthException catch (e) {
+      if (!mounted || auto) return;
+      final message = switch (e.code) {
+        LocalAuthExceptionCode.userCanceled ||
+        LocalAuthExceptionCode.systemCanceled =>
+          null,
+        LocalAuthExceptionCode.noBiometricHardware =>
+          'No biometric hardware on this device',
+        LocalAuthExceptionCode.noBiometricsEnrolled =>
+          'Enroll a fingerprint or face in device settings',
+        LocalAuthExceptionCode.biometricLockout ||
+        LocalAuthExceptionCode.temporaryLockout =>
+          'Too many attempts — use your PIN',
+        _ => 'Biometric unlock failed — use your PIN',
+      };
+      if (message != null) setState(() => _error = message);
+    } finally {
+      if (mounted) setState(() => _biometricBusy = false);
     }
   }
 
@@ -70,7 +113,6 @@ class _LockScreenState extends ConsumerState<LockScreen> {
       _error = null;
     });
     if (_pin.length >= 4) {
-      // Auto-submit when length matches stored PIN (4–6). Wait until 4+.
       _maybeAutoSubmit();
     }
   }
@@ -93,6 +135,18 @@ class _LockScreenState extends ConsumerState<LockScreen> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colors = context.cycleColors;
+    final settings = ref.watch(settingsMapProvider);
+    final showBiometric = settings[SettingsKeys.biometricEnabled] == 'true';
+
+    ref.listen(settingsMapProvider, (prev, next) {
+      if (next[SettingsKeys.biometricEnabled] == 'true' &&
+          !_autoBiometricAttempted &&
+          !_biometricBusy) {
+        WidgetsBinding.instance.addPostFrameCallback(
+          (_) => _tryBiometric(auto: true),
+        );
+      }
+    });
 
     return Scaffold(
       body: SafeArea(
@@ -108,7 +162,9 @@ class _LockScreenState extends ConsumerState<LockScreen> {
                   style: theme.textTheme.headlineMedium),
               const SizedBox(height: 8),
               Text(
-                'Enter your PIN to continue',
+                showBiometric
+                    ? 'Use biometrics or enter your PIN'
+                    : 'Enter your PIN to continue',
                 style: theme.textTheme.bodyMedium!
                     .copyWith(color: colors.textSecondary),
               ),
@@ -153,9 +209,16 @@ class _LockScreenState extends ConsumerState<LockScreen> {
                           height: 72,
                           child: key == 'bio'
                               ? IconButton(
-                                  onPressed: _tryBiometric,
-                                  icon: const Icon(Icons.fingerprint,
-                                      size: 32),
+                                  onPressed: showBiometric && !_biometricBusy
+                                      ? () => _tryBiometric()
+                                      : null,
+                                  icon: Icon(
+                                    Icons.fingerprint,
+                                    size: 32,
+                                    color: showBiometric
+                                        ? theme.colorScheme.primary
+                                        : colors.border,
+                                  ),
                                 )
                               : key == 'del'
                                   ? IconButton(

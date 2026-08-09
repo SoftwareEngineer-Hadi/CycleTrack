@@ -29,21 +29,22 @@ dart run build_runner build   # only if you change database.dart
 flutter run
 ```
 
-## Optional: Supabase cloud backup
+Cloud backup is **enabled by default** (live Supabase project baked into the build).
+To use a different project: `flutter run --dart-define-from-file=dart_defines.json`
 
-1. Create a [Supabase](https://supabase.com) project (free tier works).
-2. Run [`supabase/schema.sql`](supabase/schema.sql) in the SQL editor.
-3. Enable **Google** under Authentication → Providers.
-4. Add redirect URL: `io.supabase.cycletrack://login-callback/`
-5. Run with dart-defines:
+## Supabase cloud backup (live)
 
-```bash
-flutter run \
-  --dart-define=SUPABASE_URL=https://YOUR_PROJECT.supabase.co \
-  --dart-define=SUPABASE_ANON_KEY=YOUR_ANON_KEY
-```
+The app ships with the production Supabase URL + anon key. Backup works after you complete one-time dashboard setup:
 
-Without these defines the app runs fully offline; Backup & Restore shows a “not configured” notice.
+1. Run [`supabase/schema.sql`](supabase/schema.sql) in the Supabase SQL editor.
+   - **Existing table:** `alter table public.encrypted_backups add column if not exists wrapped_key text;`
+2. Enable **Google** under Authentication → Providers (Web OAuth client).
+3. Google Cloud redirect URI: `https://zwgzzxcchawjwrbjrvhy.supabase.co/auth/v1/callback`
+4. Supabase redirect URL: `io.supabase.cycletrack://login-callback/`
+
+**In the app:** Settings → Backup & restore → Continue with Google → Backup now
+
+Features: manual backup/restore, cross-device restore, auto-backup (every 12+ hours).
 
 ## Project structure
 

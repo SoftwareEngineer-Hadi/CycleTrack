@@ -94,4 +94,5 @@ abstract class SettingsKeys {
   static const biometricEnabled = 'biometric_enabled';
   static const themeMode = 'theme_mode';
   static const lastBackupAt = 'last_backup_at';
+  static const autoBackupEnabled = 'auto_backup_enabled';
 }

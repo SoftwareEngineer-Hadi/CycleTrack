@@ -425,7 +425,16 @@ class SettingsScreen extends ConsumerWidget {
     if (ok != true) return;
 
     await NotificationService.instance.cancelAll();
-    await SyncService(ref.read(databaseProvider)).deleteCloudBackup();
+    try {
+      await SyncService(ref.read(databaseProvider)).deleteCloudBackup();
+    } on SyncException catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(e.message)),
+        );
+      }
+      return;
+    }
     await ref.read(databaseProvider).wipeAllData();
     ref.read(appLockProvider.notifier).state = false;
     if (context.mounted) {
