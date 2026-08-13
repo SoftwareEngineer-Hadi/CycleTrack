@@ -77,8 +77,13 @@ class AppDatabase extends _$AppDatabase {
         ..where((t) => t.date.equals(_normalize(day))))
       .getSingleOrNull();
 
-  Future<void> upsertLog(DayLogsCompanion entry) =>
-      into(dayLogs).insertOnConflictUpdate(entry);
+  Future<void> upsertLog(DayLogsCompanion entry) async {
+    final date = _normalize(entry.date.value);
+    await transaction(() async {
+      await (delete(dayLogs)..where((t) => t.date.equals(date))).go();
+      await into(dayLogs).insert(entry.copyWith(date: Value(date)));
+    });
+  }
 
   Future<void> deleteLog(DateTime day) =>
       (delete(dayLogs)..where((t) => t.date.equals(_normalize(day)))).go();

@@ -9,15 +9,19 @@ import '../../../core/providers.dart';
 import '../../../core/theme/app_theme.dart';
 
 Future<void> showDayLogSheet(BuildContext context, DateTime day) {
-  return showModalBottomSheet(
+  return showModalBottomSheet<void>(
     context: context,
     isScrollControlled: true,
     useSafeArea: true,
+    isDismissible: true,
+    enableDrag: true,
     backgroundColor: Theme.of(context).colorScheme.surface,
     shape: const RoundedRectangleBorder(
       borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
     ),
-    builder: (_) => DayLogSheet(day: DateTime(day.year, day.month, day.day)),
+    builder: (sheetContext) => DayLogSheet(
+      day: DateTime(day.year, day.month, day.day),
+    ),
   );
 }
 
@@ -32,6 +36,7 @@ class DayLogSheet extends ConsumerStatefulWidget {
 
 class _DayLogSheetState extends ConsumerState<DayLogSheet> {
   bool _loaded = false;
+  bool _saving = false;
 
   FlowLevel? _flow;
   bool _intercourse = false;
@@ -52,27 +57,36 @@ class _DayLogSheetState extends ConsumerState<DayLogSheet> {
   }
 
   Future<void> _load() async {
-    final log = await ref.read(databaseProvider).getLog(widget.day);
-    if (log != null) {
-      _flow = log.flow != null ? FlowLevel.values[log.flow!] : null;
-      _intercourse = log.intercourse;
-      _protected = log.protectedSex;
-      _libido = log.libido != null ? Libido.values[log.libido!] : null;
-      _symptoms.addAll(log.symptoms.split(',').where((s) => s.isNotEmpty));
-      _moods.addAll(log.moods.split(',').where((s) => s.isNotEmpty));
-      _mucus = log.cervicalMucus != null
-          ? CervicalMucus.values[log.cervicalMucus!]
-          : null;
-      _pillTaken = log.pillTaken;
-      if (log.weightKg != null) {
-        _weightController.text = log.weightKg!.toStringAsFixed(1);
+    try {
+      final log = await ref.read(databaseProvider).getLog(widget.day);
+      if (log != null) {
+        _flow = log.flow != null ? FlowLevel.values[log.flow!] : null;
+        _intercourse = log.intercourse;
+        _protected = log.protectedSex;
+        _libido = log.libido != null ? Libido.values[log.libido!] : null;
+        _symptoms.addAll(log.symptoms.split(',').where((s) => s.isNotEmpty));
+        _moods.addAll(log.moods.split(',').where((s) => s.isNotEmpty));
+        _mucus = log.cervicalMucus != null
+            ? CervicalMucus.values[log.cervicalMucus!]
+            : null;
+        _pillTaken = log.pillTaken;
+        if (log.weightKg != null) {
+          _weightController.text = log.weightKg!.toStringAsFixed(1);
+        }
+        if (log.bbtCelsius != null) {
+          _bbtController.text = log.bbtCelsius!.toStringAsFixed(2);
+        }
+        _notesController.text = log.notes ?? '';
       }
-      if (log.bbtCelsius != null) {
-        _bbtController.text = log.bbtCelsius!.toStringAsFixed(2);
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Could not load this day\u2019s log')),
+        );
       }
-      _notesController.text = log.notes ?? '';
+    } finally {
+      if (mounted) setState(() => _loaded = true);
     }
-    if (mounted) setState(() => _loaded = true);
   }
 
   @override
@@ -84,25 +98,46 @@ class _DayLogSheetState extends ConsumerState<DayLogSheet> {
   }
 
   Future<void> _save() async {
-    final db = ref.read(databaseProvider);
-    await db.upsertLog(DayLogsCompanion.insert(
-      date: widget.day,
-      flow: Value(_flow?.index),
-      intercourse: Value(_intercourse),
-      protectedSex: Value(_intercourse ? _protected : null),
-      libido: Value(_libido?.index),
-      symptoms: Value(_symptoms.join(',')),
-      moods: Value(_moods.join(',')),
-      weightKg: Value(double.tryParse(
-          _weightController.text.replaceAll(',', '.'))),
-      bbtCelsius: Value(double.tryParse(
-          _bbtController.text.replaceAll(',', '.'))),
-      cervicalMucus: Value(_mucus?.index),
-      pillTaken: Value(_pillTaken),
-      notes: Value(
-          _notesController.text.isEmpty ? null : _notesController.text),
-    ));
-    if (mounted) Navigator.of(context).pop();
+    if (_saving) return;
+
+    FocusScope.of(context).unfocus();
+    setState(() => _saving = true);
+
+    try {
+      final db = ref.read(databaseProvider);
+      await db.upsertLog(DayLogsCompanion.insert(
+        date: widget.day,
+        flow: Value(_flow?.index),
+        intercourse: Value(_intercourse),
+        protectedSex: Value(_intercourse ? _protected : null),
+        libido: Value(_libido?.index),
+        symptoms: Value(_symptoms.join(',')),
+        moods: Value(_moods.join(',')),
+        weightKg: Value(double.tryParse(
+            _weightController.text.replaceAll(',', '.'))),
+        bbtCelsius: Value(double.tryParse(
+            _bbtController.text.replaceAll(',', '.'))),
+        cervicalMucus: Value(_mucus?.index),
+        pillTaken: Value(_pillTaken),
+        notes: Value(
+            _notesController.text.isEmpty ? null : _notesController.text),
+      ));
+      if (!mounted) return;
+      Navigator.of(context).pop();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Saved ${DateFormat.MMMd().format(widget.day)}')),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Could not save log: $e'),
+          backgroundColor: Theme.of(context).colorScheme.error,
+        ),
+      );
+    } finally {
+      if (mounted) setState(() => _saving = false);
+    }
   }
 
   @override
@@ -113,20 +148,20 @@ class _DayLogSheetState extends ConsumerState<DayLogSheet> {
     final periods = ref.watch(periodsProvider);
     final cycleDay = engine.cycleDay(widget.day, periods);
     final phase = engine.phaseOn(widget.day, periods);
+    final bottomInset = MediaQuery.viewInsetsOf(context).bottom;
 
     if (!_loaded) {
-      return const SizedBox(
-        height: 300,
-        child: Center(child: CircularProgressIndicator()),
+      return SizedBox(
+        height: MediaQuery.sizeOf(context).height * 0.4,
+        child: const Center(child: CircularProgressIndicator()),
       );
     }
 
-    return DraggableScrollableSheet(
-      expand: false,
-      initialChildSize: 0.85,
-      maxChildSize: 0.95,
-      builder: (context, scrollController) {
-        return Column(
+    return Padding(
+      padding: EdgeInsets.only(bottom: bottomInset),
+      child: SizedBox(
+        height: MediaQuery.sizeOf(context).height * 0.92,
+        child: Column(
           children: [
             const SizedBox(height: 10),
             Container(
@@ -150,8 +185,7 @@ class _DayLogSheetState extends ConsumerState<DayLogSheet> {
             const SizedBox(height: 8),
             Expanded(
               child: ListView(
-                controller: scrollController,
-                padding: const EdgeInsets.fromLTRB(24, 8, 24, 24),
+                padding: const EdgeInsets.fromLTRB(24, 8, 24, 16),
                 children: [
                   _SectionLabel('Menstrual flow'),
                   Wrap(
@@ -293,22 +327,32 @@ class _DayLogSheetState extends ConsumerState<DayLogSheet> {
                   TextField(
                     controller: _notesController,
                     maxLines: 3,
+                    textInputAction: TextInputAction.done,
+                    onSubmitted: (_) => _save(),
                     decoration: const InputDecoration(
                       hintText: 'Anything else about today\u2026',
                       border: OutlineInputBorder(),
                     ),
                   ),
-                  const SizedBox(height: 20),
-                  FilledButton(
-                    onPressed: _save,
-                    child: const Text('Save log'),
-                  ),
                 ],
               ),
             ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(24, 8, 24, 16),
+              child: FilledButton(
+                onPressed: _saving ? null : _save,
+                child: _saving
+                    ? const SizedBox(
+                        height: 22,
+                        width: 22,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : const Text('Save log'),
+              ),
+            ),
           ],
-        );
-      },
+        ),
+      ),
     );
   }
 }
