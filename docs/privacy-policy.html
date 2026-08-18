@@ -26,7 +26,7 @@
 <body>
   <main>
     <h1>CycleTrack Privacy Policy</h1>
-    <p class="muted">Last updated: August 9, 2026</p>
+    <p class="muted">Last updated: August 18, 2026</p>
 
     <p>
       CycleTrack (&quot;we&quot;, &quot;our&quot;, or &quot;the app&quot;) is a privacy-first period and
@@ -40,6 +40,7 @@
       <li>Your cycle logs are stored locally in an encrypted database on your device.</li>
       <li>Cloud backup is optional and uses end-to-end encryption before upload.</li>
       <li>We do not sell your personal data.</li>
+      <li>You can delete all data in-app; retention and deletion steps are below.</li>
     </ul>
 
     <h2>Information you provide</h2>
@@ -66,7 +67,7 @@
       ciphertext blob to our Supabase backend. The server cannot read your plaintext
       cycle data. Your Google account is used only to identify your backup row.
     </p>
-    <p>You can delete your cloud backup at any time from Settings.</p>
+    <p>You can delete your cloud backup at any time from Settings (see <strong>How to delete your data</strong> below).</p>
 
     <h2>Third-party services</h2>
     <ul>
@@ -84,12 +85,99 @@
       notifications from a server.
     </p>
 
-    <h2>Data export and deletion</h2>
+    <h2>Data retention</h2>
+    <p>
+      CycleTrack is designed so that <strong>we do not retain readable personal health
+      data on our servers</strong>. Retention depends on how you use the app:
+    </p>
     <ul>
-      <li><strong>Export CSV</strong> — download your logs from Settings.</li>
-      <li><strong>Delete everything</strong> — wipes local data, app lock, notifications, and cloud backup (when signed in).</li>
-      <li><strong>Uninstall</strong> — removes local app data from your device.</li>
+      <li>
+        <strong>Local data (default)</strong> — Your cycle logs, settings, and app lock
+        information remain on your device until you delete them in the app, use
+        <strong>Delete everything</strong> in Settings, or uninstall CycleTrack.
+        We do not automatically expire or delete local data on a fixed schedule.
+      </li>
+      <li>
+        <strong>Optional cloud backup</strong> — If you sign in with Google and back up,
+        an encrypted backup blob is stored in our Supabase database and linked to your
+        account. It is kept until you delete it (see below) or delete your backup
+        account data. We do not use cloud backups for analytics or advertising.
+      </li>
+      <li>
+        <strong>Data we do not store</strong> — We do not operate separate server logs
+        of your plaintext cycle entries, symptoms, notes, or health measurements.
+        Optional Google Sign-In is handled by Google; see
+        <a href="https://policies.google.com/privacy">Google&apos;s Privacy Policy</a>
+        for how Google retains authentication data.
+      </li>
     </ul>
+    <p>
+      If you only use CycleTrack offline and never enable cloud backup,
+      <strong>all of your data stays on your device and is not retained by us</strong>.
+    </p>
+
+    <h2>How to delete your data</h2>
+    <p>
+      You can delete your data yourself at any time. You do <strong>not</strong> need to
+      contact us for in-app deletion.
+    </p>
+
+    <h3>Delete all local and cloud data (recommended)</h3>
+    <ol>
+      <li>Open CycleTrack.</li>
+      <li>Go to <strong>Settings</strong> (bottom navigation).</li>
+      <li>Scroll to <strong>Delete everything</strong> and confirm.</li>
+    </ol>
+    <p>
+      This permanently removes your local encrypted database, app lock, scheduled
+      notifications, and your encrypted cloud backup (if you were signed in).
+    </p>
+
+    <h3>Delete cloud backup only</h3>
+    <ol>
+      <li>Open <strong>Settings → Backup &amp; restore</strong>.</li>
+      <li>Sign in with Google if you are not already signed in.</li>
+      <li>Sign out after use, or use <strong>Delete everything</strong> in Settings to
+        remove the cloud copy along with local data.</li>
+    </ol>
+    <p>
+      Cloud backup deletion removes your encrypted backup row from our Supabase server.
+      Because backups are encrypted on your device, we cannot recover plaintext data
+      after deletion.
+    </p>
+
+    <h3>Delete local data only</h3>
+    <ul>
+      <li>Use <strong>Delete everything</strong> in Settings (also removes cloud backup if signed in), or</li>
+      <li><strong>Uninstall</strong> CycleTrack from your device — this removes the local encrypted database.</li>
+    </ul>
+
+    <h3>Data deletion requests (contact)</h3>
+    <p>
+      If you cannot access the app (for example, you lost your device but had cloud
+      backup enabled with Google Sign-In), you may request deletion of your cloud
+      backup by contacting us:
+    </p>
+    <ul>
+      <li>
+        Email or message the developer via the GitHub repository:
+        <a href="https://github.com/SoftwareEngineer-Hadi/CycleTrack/issues">open an issue</a>
+        with the subject <strong>Data deletion request</strong> and the Google account
+        email used for backup.
+      </li>
+    </ul>
+    <p>
+      We will verify ownership of the backup account and delete the associated encrypted
+      cloud backup within <strong>30 days</strong>. Local data on a lost device cannot
+      be deleted remotely unless you had enabled cloud backup; uninstalling from a new
+      device does not affect data still on an old device.
+    </p>
+
+    <h2>Data export</h2>
+    <p>
+      You can export a copy of your logs at any time: open <strong>Settings → Export CSV</strong>.
+      The file is saved to your device and is not uploaded to our servers.
+    </p>
 
     <h2>Children</h2>
     <p>CycleTrack is not directed at children under 13. We do not knowingly collect data from children.</p>
